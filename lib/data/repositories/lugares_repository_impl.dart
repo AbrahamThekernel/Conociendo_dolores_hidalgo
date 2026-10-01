@@ -11,13 +11,4 @@ class LugaresRepositoryImpl implements LugaresRepository {
   Future<List<LugarTuristico>> obtenerTodos() async {
     return dataSource.obtenerLugares();
   }
-
-  @override
-  Future<LugarTuristico?> obtenerPorId(String id) async {
-    final lugares = dataSource.obtenerLugares();
-    for (final lugar in lugares) {
-      if (lugar.id == id) return lugar;
-    }
-    return null;
-  }
 }

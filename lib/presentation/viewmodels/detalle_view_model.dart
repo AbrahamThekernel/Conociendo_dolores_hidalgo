@@ -1,21 +1,41 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
+
 import '../../domain/entities/lugar_turistico.dart';
 
 class DetalleViewModel extends ChangeNotifier {
   final LugarTuristico lugar;
-  final AudioPlayer _reproductor = AudioPlayer();
-  bool reproduciendo = false;
+  final AudioPlayer _reproductor;
 
-  DetalleViewModel(this.lugar);
+  DetalleViewModel(this.lugar, {AudioPlayer? reproductor})
+      : _reproductor = reproductor ?? AudioPlayer() {
+    _reproductor.setReleaseMode(ReleaseMode.stop);
+    _reproductor.onPlayerComplete.listen((_) {
+      _reproduciendo = false;
+      notifyListeners();
+    });
+  }
+
+  bool _reproduciendo = false;
+  bool get reproduciendo => _reproduciendo;
+
+  String? _error;
+  String? get error => _error;
 
   Future<void> alternarAudio() async {
-    if (reproduciendo) {
-      await _reproductor.pause();
-    } else {
-      await _reproductor.play(AssetSource(lugar.audioAsset));
+    try {
+      if (_reproductor.state == PlayerState.playing) {
+        await _reproductor.pause();
+        _reproduciendo = false;
+      } else {
+        await _reproductor.play(AssetSource(lugar.audioAsset));
+        _reproduciendo = true;
+      }
+      _error = null;
+    } catch (e) {
+      _reproduciendo = false;
+      _error = 'No fue posible reproducir el audio.';
     }
-    reproduciendo = !reproduciendo;
     notifyListeners();
   }
 
